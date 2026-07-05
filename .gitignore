@@ -2,7 +2,6 @@
 git.env
 .env
 
-# Miscellaneous
 *.class
 *.log
 *.pyc
