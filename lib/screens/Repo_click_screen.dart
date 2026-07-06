@@ -22,7 +22,6 @@ class RepoClickScreen extends StatelessWidget {
     appBar: AppBar(
       backgroundColor: Colors.grey,
       title: Text(repo["name"]),
-
     ),
     body: Padding(
       padding: EdgeInsets.all(20),
@@ -54,8 +53,7 @@ class RepoClickScreen extends StatelessWidget {
                     children: [
                       Text("Stars",
                         style: TextStyle(color: Colors.white70),),
-                      Text(
-                        "${repo["stargazers_count"]}",
+                      Text("${repo["stargazers_count"]}",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
