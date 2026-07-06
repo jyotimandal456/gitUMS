@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GitProvider extends ChangeNotifier {
   final TextEditingController controller = TextEditingController();
-
   final Dio dio = Dio();
   Map<String, dynamic> _user = {};
   Map<String, dynamic> get user => _user;
@@ -17,7 +17,6 @@ class GitProvider extends ChangeNotifier {
 
   List<dynamic> _repoCode = [];
   List<dynamic> get repoCode => _repoCode;
-
 
   List<dynamic>_followers =[];
   List<dynamic> get followers => _followers;
@@ -41,12 +40,13 @@ class GitProvider extends ChangeNotifier {
         ),
       );
       _user = response.data;
+      print("user list");
+      print(_user);
       notifyListeners();
     } on DioException catch (e) {
       print(e.response?.data);
     }
   }
-
   Future<void> getRepo(String username) async {
     try {
       Response response = await dio.get(
@@ -58,19 +58,18 @@ class GitProvider extends ChangeNotifier {
           },
         ),
       );
-
       _repos = response.data;
       notifyListeners();
     } on DioException catch (e) {
-     // print(e.response?.data);
+     print(e.response?.data);
     }
   }
   void selectRepo(Map<String, dynamic> repo) {
     _selectedRepo = repo;
+   // print(_selectedRepo);
     notifyListeners();
   }
-
-  Future<void> getRepoCode(String owner,
+  Future<void> getRepoList(String owner,
       String repoName) async {
     try {
       Response response = await dio.get("https://api.github.com/repos/$owner/$repoName/contents",
@@ -83,6 +82,8 @@ class GitProvider extends ChangeNotifier {
       );
 
       _repoCode = response.data;
+      print("this is the response to get all repo list");
+      print(_repoCode);
       notifyListeners();
     } on DioException catch (e) {
       print(e.response?.data);
@@ -126,4 +127,16 @@ class GitProvider extends ChangeNotifier {
     _issue=response.data;
     notifyListeners();
   }
+  Future <void> openWebsite( String username) async {
+    final Uri url= Uri.parse(_user['html_url']);
+    if (await launchUrl(url)) {
+      await launchUrl(url,
+        mode: LaunchMode.externalApplication,
+      );
+    } else {
+      throw Exception('Could not lunch $url ');
+    }
+  }
 }
+
+//language url = https://api.github.com/repos/Nimeshis/backend/languages

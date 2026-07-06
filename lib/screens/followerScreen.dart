@@ -11,8 +11,18 @@ class FollowersScreen extends StatelessWidget {
     return Consumer<GitProvider>(
       builder: (context, provider, child) {
         return Scaffold(
+          backgroundColor: Color(0xff141D2F),
           appBar: AppBar(
-            title:  Text("Followers"),
+            backgroundColor: Color(0xff0D1117),
+            elevation: 0,
+            centerTitle: true,
+            title: Text(
+              "Repositories",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           body: ListView.builder(
             itemCount: provider.followers.length,
@@ -20,7 +30,9 @@ class FollowersScreen extends StatelessWidget {
               final follower = provider.followers[index];
                 return ListTile(
                   leading: CircleAvatar(backgroundImage: NetworkImage(follower["avatar_url"],),),
-                  title: Text(follower["login"]),
+                  title: Text(follower["login"],
+                  style: TextStyle(color: Colors.white)
+                    ),
                 onTap: () {
                   provider.searchUser(follower["login"]);
                   Navigator.push(context, MaterialPageRoute(builder: (_) => UserDetailScreen ()));

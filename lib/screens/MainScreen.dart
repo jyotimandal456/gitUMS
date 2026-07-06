@@ -43,7 +43,6 @@ class Mainscreen extends StatelessWidget {
                     suffixIcon: IconButton(
                       onPressed: () {
                         provider.searchUser(provider.controller.text.trim());
-
                       },
                       icon: Icon(Icons.search_rounded),
                     ),
@@ -62,15 +61,12 @@ class Mainscreen extends StatelessWidget {
                   ?  SizedBox()
                   : InkWell(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => UserDetailScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserDetailScreen()));
                 },
                 child: Card(
                   margin:  EdgeInsets.all(16),
                   child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage:
+                    leading: CircleAvatar(backgroundImage:
                       NetworkImage(provider.user["avatar_url"]),
                     ),
                     title: Text(provider.user["login"]),
