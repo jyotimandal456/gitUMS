@@ -93,12 +93,17 @@ class RepoScreen extends StatelessWidget {
             ),
             onTap: () async {
               provider.selectRepo(repo);
+
               await provider.getRepoList(
                 repo["owner"]["login"],
                 repo["name"],
               );
-              Navigator.push(context, MaterialPageRoute(builder: (_) => RepoClickScreen(),),
+
+              await provider.getRepoLanguages(
+                repo["owner"]["login"],
+                repo["name"],
               );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => RepoClickScreen(),),);
             },
           );
         },
