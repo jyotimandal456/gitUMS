@@ -10,6 +10,8 @@ class RepoClickScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<GitProvider>(context);
     final repo = provider.selectedRepo;
+    Map<String, double> percentage =
+    provider.getRepoPercentage();
       if (repo.isEmpty) {
        return Scaffold(
        body: Center(
@@ -92,13 +94,12 @@ class RepoClickScreen extends StatelessWidget {
 
               SizedBox(height: 20),
 
-              ListTile(
-                leading: Icon(Icons.code, color: Colors.white),
-                title: Text(
-                  repo["language"] ?? "Unknown",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.code, color: Colors.white),
+              //   title: Text(repo["language"] ?? "Unknown",
+              //     style: TextStyle(color: Colors.white),
+              //   ),
+              // ),
 
               ListTile(
                 leading: Icon(Icons.bug_report, color: Colors.white),
@@ -117,6 +118,79 @@ class RepoClickScreen extends StatelessWidget {
                   style: TextStyle(color: Colors.lightBlueAccent),
                 ),
               ),
+              SizedBox(height: 30),
+              SizedBox(height: 20),
+
+              Text(
+                "Languages",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: SizedBox(
+                  height: 8,
+                  width: double.infinity,
+                  child: Row(
+                    children: percentage.entries.map((entry) {
+                      return Expanded(
+                        flex: (entry.value * 100).round(),
+                        child: Container(
+                          color: provider.getLanguageColor(entry.key),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 15),
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: percentage.entries.map((entry) {
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: provider.getLanguageColor(entry.key),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            entry.key,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+
+                        Text("${(entry.value * 100).toStringAsFixed(1)}%",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+
             ],
           ),
         ),

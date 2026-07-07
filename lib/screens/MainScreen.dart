@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 class Mainscreen extends StatelessWidget {
   const Mainscreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,8 +42,11 @@ class Mainscreen extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: 'Search by name',
                     suffixIcon: IconButton(
-                      onPressed: () {
-                        provider.searchUser(provider.controller.text.trim());
+                      onPressed: () async {
+                        String username = provider.controller.text.trim();
+                        provider.searchUser(username);
+                        await provider.getRepo(username);
+
                       },
                       icon: Icon(Icons.search_rounded),
                     ),

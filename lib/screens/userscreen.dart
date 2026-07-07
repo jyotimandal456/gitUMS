@@ -5,14 +5,26 @@ import 'package:git_ums/screens/following_screen.dart';
 import 'package:git_ums/screens/repoScreen.dart';
 import 'package:provider/provider.dart';
 import '../providers/git_provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class UserDetailScreen extends StatelessWidget {
   const UserDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    List<Color> colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.red,
+      Colors.purple,
+      Colors.teal,
+    ];
     return Consumer<GitProvider>(
       builder: (context, provider, _) {
+        print(provider.getLanguage().entries.length);
+        print("Repo Length: ${provider.repos.length}");
+        print("Languages: ${provider.getLanguage()}");
         if (provider.user.isEmpty) {
           return Scaffold(
             body: Center(
@@ -127,6 +139,7 @@ class UserDetailScreen extends StatelessWidget {
                                     style: TextStyle(
                                       color: Colors.white,
                                     ),
+
                                   ),
                                 ],
                               ),
@@ -166,6 +179,112 @@ class UserDetailScreen extends StatelessWidget {
                             provider.openWebsite(provider.user["html_url"],);
                           },
                         ),
+                        Divider(),
+                        Padding(
+                            padding:EdgeInsets.symmetric(horizontal: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Languages",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              SizedBox(height: 30,),
+                              // SizedBox(
+                              //   height: 250,
+                              //   width: 250,
+                              //   child: PieChart(
+                              //     PieChartData(
+                              //       sections: [
+                              //         PieChartSectionData(
+                              //           value: 40,
+                              //           color: Colors.blue,
+                              //           title: "40%",
+                              //         ),
+                              //         PieChartSectionData(
+                              //           value: 30,
+                              //           color: Colors.green,
+                              //           title: "30%",
+                              //         ),
+                              //         PieChartSectionData(
+                              //           value: 30,
+                              //           color: Colors.orange,
+                              //           title: "30%",
+                              //         ),
+                              //       ],
+                              //     ),
+                              //   ),
+                              // )
+
+                              Row(
+                                crossAxisAlignment:CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: 180,
+                                    width: 180,
+                                    child: PieChart(
+                                      PieChartData(
+                                        centerSpaceRadius: 40,
+                                        sectionsSpace: 2,
+                                        borderData: FlBorderData(show: false),
+                                        sections: provider.getLanguage().entries.toList().asMap().entries.map((item) {
+                                          int index = item.key;
+                                          var entry = item.value;
+                                          return PieChartSectionData(
+                                            value: entry.value * 100,
+                                            title: "",
+                                            color: colors[index % colors.length],
+                                            radius: 40,
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: provider.getLanguage().entries.toList().asMap().entries.map((item) {
+                                        int index = item.key;
+                                        var entry = item.value;
+                                        return Padding(
+                                          padding: EdgeInsets.only(bottom: 10),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 12,
+                                                height: 12,
+                                                decoration: BoxDecoration(
+                                                  color: colors[index % colors.length],
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  entry.key,
+                                                  style: TextStyle(color: Colors.white),
+                                                ),
+                                              ),
+                                              Text("${(entry.value * 100).toStringAsFixed(0)}%",
+                                                style: TextStyle(color: Colors.white),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          )
+                        )
                       ],
                     ),
                   ),
@@ -173,7 +292,7 @@ class UserDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-        );
+       );
       },
     );
   }

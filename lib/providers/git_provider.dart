@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 class GitProvider extends ChangeNotifier {
   final TextEditingController controller = TextEditingController();
   final Dio dio = Dio();
+  final String? accessToken = dotenv.env['GITHUB_TOKEN'];
   Map<String, dynamic> _user = {};
   Map<String, dynamic> get user => _user;
 
@@ -25,9 +26,79 @@ class GitProvider extends ChangeNotifier {
   List <dynamic> get following=> _following;
 
   List <dynamic> _issue=[];
-  List <dynamic> get issue => _issue; 
+  List <dynamic> get issue => _issue;
 
-  final String? accessToken = dotenv.env['GITHUB_TOKEN'];
+  Map<String, int> _repoLanguages = {};
+  Map<String, int> get repoLanguages => _repoLanguages;
+
+  Map <String ,int> LanguageCount={};
+
+  Map<String, double> getLanguage() {
+    Map<String, int> languageCount = {};
+    for (var repo in repos) {
+      String language = repo["language"] ?? "Unknown";
+      languageCount[language] = (languageCount[language] ?? 0) + 1;
+    }
+
+    int total = repos.length;
+
+    Map<String, double> percentage = {};
+
+    languageCount.forEach((key, value) {
+      percentage[key] = value / total;
+    });
+    return percentage;
+  }
+
+  Future<void> getRepoLanguages(String owner, String repoName,) async {
+    try {
+      Response response = await dio.get(
+        "https://api.github.com/repos/$owner/$repoName/languages",
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $accessToken",
+            "Accept": "application/vnd.github+json",
+          },
+        ),
+      );
+      _repoLanguages= Map<String, int>.from(response.data);
+      notifyListeners();
+    } on DioException catch (e) {
+      print(e.response?.data);
+    }
+  }
+
+  Map<String, double> getRepoPercentage() {
+    int total = repoLanguages.values.fold(0, (sum, value) => sum + value);
+
+    Map<String, double> percentage = {};
+
+    repoLanguages.forEach((key, value) {
+      percentage[key] = value / total;
+    });
+
+    return percentage;
+  }
+  Color getLanguageColor(String language) {
+    switch (language) {
+      case "Dart":
+        return Colors.blue;
+      case "JavaScript":
+        return Colors.yellow;
+      case "HTML":
+        return Colors.orange;
+      case "CSS":
+        return Colors.purple;
+      case "Java":
+        return Colors.red;
+      case "Python":
+        return Colors.green;
+      case "PHP":
+        return Colors.indigo;
+      default:
+        return Colors.grey;
+    }
+  }
 
   Future<void> searchUser(String username) async {
     try {
@@ -40,8 +111,9 @@ class GitProvider extends ChangeNotifier {
         ),
       );
       _user = response.data;
-      print("user list");
-      print(_user);
+      await getRepo(username);
+     // print("user list");
+     // print(_user);
       notifyListeners();
     } on DioException catch (e) {
       print(e.response?.data);
@@ -49,6 +121,7 @@ class GitProvider extends ChangeNotifier {
   }
   Future<void> getRepo(String username) async {
     try {
+      print("Fetching repos for: $username");
       Response response = await dio.get(
         "https://api.github.com/users/$username/repos",
         options: Options(
@@ -58,10 +131,14 @@ class GitProvider extends ChangeNotifier {
           },
         ),
       );
+
       _repos = response.data;
+
+      print("Repos loaded: ${_repos.length}");
+
       notifyListeners();
     } on DioException catch (e) {
-     print(e.response?.data);
+      print("Repo Error: ${e.response?.data}");
     }
   }
   void selectRepo(Map<String, dynamic> repo) {
