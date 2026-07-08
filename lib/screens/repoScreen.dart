@@ -9,17 +9,24 @@ class RepoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GitProvider>(context);
-
+    List<Color> colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.red,
+      Colors.purple,
+      Colors.teal,
+    ];
     return Scaffold(
       backgroundColor: Color(0xff141D2F),
       appBar: AppBar(
-        backgroundColor: Color(0xff0D1117),
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
           "Repositories",
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -37,74 +44,145 @@ class RepoScreen extends StatelessWidget {
         },
         itemBuilder: (context, index) {
           final repo = provider.repos[index];
-          return ListTile(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(15),
+              onTap: () async {
+                provider.selectRepo(repo);
+
+                await provider.getRepoList(
+                  repo["owner"]["login"],
                   repo["name"],
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                );
+
+                await provider.getRepoLanguages(
+                  repo["owner"]["login"],
+                  repo["name"],
+                );
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => RepoClickScreen(),
                   ),
-                ),
-                SizedBox(height: 20),
-                Row(
-                  children: [
-                    Icon(Icons.star,
-                      color: Colors.yellow,
-                      size: 15,
-                    ),
-                    SizedBox(width: 3),
-                    Text("${repo["stargazers_count"]}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                    SizedBox(width: 25),
-                    Text(repo["language"] ?? "Unknown",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Color(0xff1E2A47),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: Colors.white10,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
-              ],
-            ),
-            trailing: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text("Public",
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.book,
+                          color: Colors.lightBlueAccent,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            repo["name"],
+                            style: TextStyle(
+                              color: Colors.lightBlueAccent,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 10),
+                    Text(
+                      repo["description"] ?? "No description available",
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+
+                    SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: colors[index % colors.length],
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          repo["language"] ?? "Unknown",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                        Spacer(),
+                        // Icon(
+                        //   Icons.star_border,
+                        //   color: Colors.amber,
+                        //   size: 18,
+                        // ),
+                        // SizedBox(width: 4),
+                        // Text("${repo["stargazers_count"]}",
+                        //   style: TextStyle(color: Colors.white),
+                        // ),
+                        // SizedBox(width: 18),
+                        // Icon(
+                        //   Icons.call_split,
+                        //   color: Colors.grey,
+                        //   size: 18,
+                        // ),
+                        // SizedBox(width: 4),
+                        // Text(
+                        //   "${repo["forks_count"]}",
+                        //   style: TextStyle(color: Colors.white),
+                        // ),
+                        // SizedBox(width: 18),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text('${repo["visibility"]}',
+                            style: TextStyle(
+                              color: Colors.greenAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-            onTap: () async {
-              provider.selectRepo(repo);
-
-              await provider.getRepoList(
-                repo["owner"]["login"],
-                repo["name"],
-              );
-
-              await provider.getRepoLanguages(
-                repo["owner"]["login"],
-                repo["name"],
-              );
-              Navigator.push(context, MaterialPageRoute(builder: (_) => RepoClickScreen(),),);
-            },
           );
         },
       ),
