@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:git_ums/providers/git_provider.dart';
 import 'package:git_ums/screens/issueScreen.dart';
 import 'package:provider/provider.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 class RepoClickScreen extends StatelessWidget {
   const RepoClickScreen({super.key});
@@ -113,9 +114,7 @@ class RepoClickScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     Divider(color: Colors.white24, height: 40),
-
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: Icon(Icons.bug_report, color: Colors.redAccent),
@@ -174,6 +173,7 @@ class RepoClickScreen extends StatelessWidget {
                     ),
 
                     SizedBox(height: 15),
+
 
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
