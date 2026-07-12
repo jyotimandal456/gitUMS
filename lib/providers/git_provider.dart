@@ -1,14 +1,28 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GitProvider extends ChangeNotifier {
   final TextEditingController controller = TextEditingController();
   final Dio dio = Dio();
-  final String? accessToken = dotenv.env['GITHUB_TOKEN'];
+   String? _accessToken = dotenv.env['GITHUB_TOKEN'];
+   String? get accessToken=>_accessToken;
   Map<String, dynamic> _user = {};
   Map<String, dynamic> get user => _user;
+  String _username = "";
+
+  int _currentPage = 1;
+  int get currentPage => _currentPage;
+
+  final int perPage = 4;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  bool _hasNextPage = true;
+  bool get hasNextPage => _hasNextPage;
 
   List<dynamic> _repos = [];
   List<dynamic> get repos => _repos;
@@ -36,7 +50,7 @@ class GitProvider extends ChangeNotifier {
   Map<String, double> getLanguage() {
     Map<String, int> languageCount = {};
     for (var repo in repos) {
-      String language = repo["language"] ?? "Unknown";
+      String language = repo["language"] ?? "";
       languageCount[language] = (languageCount[language] ?? 0) + 1;
     }
 
@@ -79,7 +93,7 @@ class GitProvider extends ChangeNotifier {
 
     return percentage;
   }
-  Color getLanguageColor(String language) {
+     Color getLanguageColor(String language) {
     switch (language) {
       case "Dart":
         return Color(0xff00B4AB);
@@ -196,6 +210,7 @@ class GitProvider extends ChangeNotifier {
 
   Future<void> searchUser(String username) async {
     try {
+      _username=username;
       Response response = await dio.get("https://api.github.com/users/$username",
         options: Options(
           headers: {
@@ -205,6 +220,7 @@ class GitProvider extends ChangeNotifier {
         ),
       );
       _user = response.data;
+      _currentPage=1;
       await getRepo(username);
      // print("user list");
      // print(_user);
@@ -215,8 +231,15 @@ class GitProvider extends ChangeNotifier {
   }
   Future<void> getRepo(String username) async {
     try {
-      print("Fetching repos for: $username");
-      Response response = await dio.get("https://api.github.com/users/$username/repos",
+      _isLoading = true;
+      notifyListeners();
+
+      Response response = await dio.get(
+        "https://api.github.com/users/$username/repos",
+        queryParameters: {
+          "page": _currentPage,
+          "per_page": perPage,
+        },
         options: Options(
           headers: {
             "Authorization": "Bearer $accessToken",
@@ -227,13 +250,40 @@ class GitProvider extends ChangeNotifier {
 
       _repos = response.data;
 
-      print("Repos loaded: ${_repos.length}");
+      _hasNextPage = _repos.length == perPage;
+      print("Current Page: $_currentPage");
+      print("Repos Loaded: ${_repos.length}");
+      if (_repos.isNotEmpty) {
+        print("First Repo: ${_repos.first["name"]}");
+      }
+      _isLoading = false;
 
       notifyListeners();
     } on DioException catch (e) {
-      print("Repo Error: ${e.response?.data}");
+      _isLoading = false;
+      notifyListeners();
+      print(e.response?.data);
     }
   }
+  Future<void> nextPage() async{
+    if(!_hasNextPage) return;
+    _currentPage++;
+    await getRepo(_username);
+  }
+  Future<void>previousPage() async{
+    if(_currentPage==1)
+      return;
+    _currentPage--;
+    await getRepo(_username);
+  }
+  Future<void> goToPage(int page) async {
+    if (page < 1) return;
+
+    _currentPage = page;
+
+    await getRepo(_username);
+  }
+
   void selectRepo(Map<String, dynamic> repo) {
     _selectedRepo = repo;
    // print(_selectedRepo);
@@ -317,7 +367,7 @@ class GitProvider extends ChangeNotifier {
       throw Exception('Could not launch $url');
     }
   }
+
 }
 
 
-//language url = https://api.github.com/repos/Nimeshis/backend/languages

@@ -169,6 +169,15 @@ class UserDetailScreen extends StatelessWidget {
                               ),
                               Divider(),
                               ListTile(
+                                leading: Icon(Icons.apartment,
+                                  color: Colors.white,
+                                ),
+                                title: Text('Organization: ${provider.user['']}',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              Divider(),
+                              ListTile(
                                 leading: Icon(Icons.location_on,
                                   color: Colors.white,
                                 ),
@@ -183,8 +192,7 @@ class UserDetailScreen extends StatelessWidget {
                                 title: Text(provider.user["html_url"],
                                   style: TextStyle(color: Colors.white),
                                 ),
-                                onTap: () {provider.openWebsite(
-                                    provider.user["html_url"],);
+                                onTap: () {provider.openWebsite(provider.user["html_url"],);
                                 },
                               ),
                               Divider(),
