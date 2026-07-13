@@ -1,17 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:git_ums/config/dio_client.dart';
 
 class GitProvider extends ChangeNotifier {
   final TextEditingController controller = TextEditingController();
-  final Dio dio = Dio();
-   String? _accessToken = dotenv.env['GITHUB_TOKEN'];
-   String? get accessToken=>_accessToken;
+  final Dio dio = DioClient.dio;
   Map<String, dynamic> _user = {};
   Map<String, dynamic> get user => _user;
   String _username = "";
+  List<dynamic> _allRepos = [];
+
+  List<dynamic> get allRepos => _allRepos;
 
   int _currentPage = 1;
   int get currentPage => _currentPage;
@@ -33,49 +35,71 @@ class GitProvider extends ChangeNotifier {
   List<dynamic> _repoCode = [];
   List<dynamic> get repoCode => _repoCode;
 
-  List<dynamic>_followers =[];
+  List<dynamic> _followers = [];
   List<dynamic> get followers => _followers;
-  
-  List <dynamic>_following=[];
-  List <dynamic> get following=> _following;
 
-  List <dynamic> _issue=[];
-  List <dynamic> get issue => _issue;
+  List<dynamic> _following = [];
+  List<dynamic> get following => _following;
+
+  List<dynamic> _issue = [];
+  List<dynamic> get issue => _issue;
 
   Map<String, int> _repoLanguages = {};
   Map<String, int> get repoLanguages => _repoLanguages;
 
-  Map <String ,int> LanguageCount={};
+  Map<String, int> LanguageCount = {};
 
   Map<String, double> getLanguage() {
     Map<String, int> languageCount = {};
-    for (var repo in repos) {
-      String language = repo["language"] ?? "";
-      languageCount[language] = (languageCount[language] ?? 0) + 1;
+
+    for (var repo in allRepos) {
+      String? language = repo["language"];
+
+      if (language != null) {
+        languageCount[language] = (languageCount[language] ?? 0) + 1;
+      }
     }
 
-    int total = repos.length;
+    int total = languageCount.values.fold(0, (sum, value) => sum + value);
 
     Map<String, double> percentage = {};
+
+    if (total == 0) {
+      return percentage;
+    }
 
     languageCount.forEach((key, value) {
       percentage[key] = value / total;
     });
+
     return percentage;
   }
 
-  Future<void> getRepoLanguages(String owner, String repoName,) async {
+  Future<void> getAllRepo(String username) async {
     try {
       Response response = await dio.get(
-        "https://api.github.com/repos/$owner/$repoName/languages",
-        options: Options(
-          headers: {
-            "Authorization": "Bearer $accessToken",
-            "Accept": "application/vnd.github+json",
-          },
-        ),
+        "users/$username/repos",
+        queryParameters: {"per_page": 100},
       );
-      _repoLanguages= Map<String, int>.from(response.data);
+
+      print("GET ALL REPO RESPONSE:");
+      print(response.data);
+
+      _allRepos = response.data;
+
+      print("ALL REPOS COUNT: ${_allRepos.length}");
+
+      notifyListeners();
+    } on DioException catch (e) {
+      print("GET ALL REPO ERROR");
+      print(e.response?.data);
+    }
+  }
+
+  Future<void> getRepoLanguages(String owner, String repoName) async {
+    try {
+      Response response = await dio.get("repos/$owner/$repoName/languages");
+      _repoLanguages = Map<String, int>.from(response.data);
       notifyListeners();
     } on DioException catch (e) {
       print(e.response?.data);
@@ -93,7 +117,8 @@ class GitProvider extends ChangeNotifier {
 
     return percentage;
   }
-     Color getLanguageColor(String language) {
+
+  Color getLanguageColor(String language) {
     switch (language) {
       case "Dart":
         return Color(0xff00B4AB);
@@ -210,42 +235,48 @@ class GitProvider extends ChangeNotifier {
 
   Future<void> searchUser(String username) async {
     try {
-      _username=username;
-      Response response = await dio.get("https://api.github.com/users/$username",
-        options: Options(
-          headers: {
-            "Authorization": "Bearer $accessToken",
-            "Accept": "application/vnd.github+json",
-          },
-        ),
-      );
+      _username = username;
+      final prefs = await SharedPreferences.getInstance();
+      await saveUsername(username);
+
+      Response response = await dio.get("users/$username");
+
       _user = response.data;
-      _currentPage=1;
+
+      _currentPage = 1;
+
+      await getAllRepo(username);
       await getRepo(username);
-     // print("user list");
-     // print(_user);
+
       notifyListeners();
     } on DioException catch (e) {
       print(e.response?.data);
     }
   }
+
+  Future<void> saveUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> usernames = prefs.getStringList("searched_users") ?? [];
+
+    if (!usernames.contains(username)) {
+      usernames.add(username);
+    }
+    await prefs.setStringList("searched_users", usernames);
+  }
+
+  Future<List<String>> getSavedUsernames() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList("searched_users") ?? [];
+  }
+
   Future<void> getRepo(String username) async {
     try {
       _isLoading = true;
       notifyListeners();
 
       Response response = await dio.get(
-        "https://api.github.com/users/$username/repos",
-        queryParameters: {
-          "page": _currentPage,
-          "per_page": perPage,
-        },
-        options: Options(
-          headers: {
-            "Authorization": "Bearer $accessToken",
-            "Accept": "application/vnd.github+json",
-          },
-        ),
+        "users/$username/repos",
+        queryParameters: {"page": _currentPage, "per_page": perPage},
       );
 
       _repos = response.data;
@@ -265,17 +296,19 @@ class GitProvider extends ChangeNotifier {
       print(e.response?.data);
     }
   }
-  Future<void> nextPage() async{
-    if(!_hasNextPage) return;
+
+  Future<void> nextPage() async {
+    if (!_hasNextPage) return;
     _currentPage++;
     await getRepo(_username);
   }
-  Future<void>previousPage() async{
-    if(_currentPage==1)
-      return;
+
+  Future<void> previousPage() async {
+    if (_currentPage == 1) return;
     _currentPage--;
     await getRepo(_username);
   }
+
   Future<void> goToPage(int page) async {
     if (page < 1) return;
 
@@ -286,20 +319,13 @@ class GitProvider extends ChangeNotifier {
 
   void selectRepo(Map<String, dynamic> repo) {
     _selectedRepo = repo;
-   // print(_selectedRepo);
+    // print(_selectedRepo);
     notifyListeners();
   }
-  Future<void> getRepoList(String owner,
-      String repoName) async {
+
+  Future<void> getRepoList(String owner, String repoName) async {
     try {
-      Response response = await dio.get("https://api.github.com/repos/$owner/$repoName/contents",
-        options: Options(
-          headers: {
-            "Authorization": "Bearer $accessToken",
-            "Accept": "application/vnd.github+json",
-          },
-        ),
-      );
+      Response response = await dio.get("repos/$owner/$repoName/contents");
 
       _repoCode = response.data;
       print("this is the response to get all repo list");
@@ -309,50 +335,29 @@ class GitProvider extends ChangeNotifier {
       print(e.response?.data);
     }
   }
+
   Future<void> getfollowers(String username) async {
-    Response response=await dio.get('https://api.github.com/users/$username/followers',
-    options:  Options(
-      headers: {
-        "Authorization":"Bearer $accessToken",
-        "Accept": "application/vnd.github+json",
-      }
-    )
-    );
-    _followers=response.data;
+    Response response = await dio.get('users/$username/followers');
+    _followers = response.data;
     notifyListeners();
   }
-  
-  Future<void> getfollowing (String username) async{
-    Response response =await dio.get("https://api.github.com/users/$username/following",
-      options: Options(
-        headers: {
-          "Authorization": "Bearer $accessToken",
-          "Accept": "application/vnd.github+json",
-        }
-      )
-    );
-    _following=response.data;
+
+  Future<void> getfollowing(String username) async {
+    Response response = await dio.get("users/$username/following");
+    _following = response.data;
     notifyListeners();
   }
-  
-  Future<void>getissue(String owner, String repo)async{
-    Response response =await dio.get("https://api.github.com/repos/$owner/$repo/issues",
-    options: Options(
-      headers: {
-        "Authorization": "Bearer $accessToken",
-        "accept": "application/vnd.github+json"
-      }
-    )
-    );
-    _issue=response.data;
+
+  Future<void> getissue(String owner, String repo) async {
+    Response response = await dio.get("repos/$owner/$repo/issues");
+    _issue = response.data;
     notifyListeners();
   }
-  Future <void> openWebsite( String username) async {
-    final Uri url= Uri.parse(_user['html_url']);
+
+  Future<void> openWebsite(String username) async {
+    final Uri url = Uri.parse(_user['html_url']);
     if (await launchUrl(url)) {
-      await launchUrl(url,
-        mode: LaunchMode.externalApplication,
-      );
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       throw Exception('Could not lunch $url ');
     }
@@ -360,14 +365,8 @@ class GitProvider extends ChangeNotifier {
 
   Future<void> repoWebsite(String url) async {
     final Uri uri = Uri.parse(url);
-    if (!await launchUrl(
-      uri,
-      mode: LaunchMode.externalApplication,
-    )) {
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       throw Exception('Could not launch $url');
     }
   }
-
 }
-
-

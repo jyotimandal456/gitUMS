@@ -22,9 +22,16 @@ class UserDetailScreen extends StatelessWidget {
     ];
     return Consumer<GitProvider>(
         builder: (context, provider, _) {
+          print("All repos: ${provider.allRepos.length}");
+          print("Paginated repos: ${provider.repos.length}");
           print(provider.getLanguage().entries.length);
           print("Repo Length: ${provider.repos.length}");
           print("Languages: ${provider.getLanguage()}");
+          print(
+            provider.repos.map((repo) {
+              return repo["language"];
+            }).toList(),
+          );
           if (provider.user.isEmpty) {
             return Scaffold(
               body: Center(
@@ -235,7 +242,7 @@ class UserDetailScreen extends StatelessWidget {
 
                                                 return PieChartSectionData(
                                                   value: entry.value * 100,
-                                                  title: "",
+                                                  title: '',
                                                   color: colors[index % colors.length],
                                                   radius: 35,
                                                 );
