@@ -5,10 +5,29 @@ import 'package:git_ums/providers/git_provider.dart';
 import 'package:git_ums/screens/userscreen.dart';
 import 'package:provider/provider.dart';
 
-class Mainscreen extends StatelessWidget {
+class Mainscreen extends StatefulWidget {
   const Mainscreen({super.key});
 
+  @override
+  State<Mainscreen> createState() => _MainscreenState();
+}
 
+class _MainscreenState extends State<Mainscreen> {
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  Future<void> loadUser() async {
+    final provider = context.read<GitProvider>();
+    final username = await provider.getSavedUsernames();
+
+    if(username != null){
+      await provider.searchUser(username as String);
+    }
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,6 +53,7 @@ class Mainscreen extends StatelessWidget {
                 ),
               ),
             ),
+
             SliverToBoxAdapter(
               child: Padding(
                 padding:  EdgeInsets.all(10),
@@ -44,8 +64,8 @@ class Mainscreen extends StatelessWidget {
                     suffixIcon: IconButton(
                       onPressed: () async {
                         String username = provider.controller.text.trim();
-                        provider.searchUser(username);
-                        await provider.getRepo(username);
+                       await provider.searchUser(username);
+                       // await provider.getRepo(username);
 
                       },
                       icon: Icon(Icons.search_rounded),
@@ -58,6 +78,31 @@ class Mainscreen extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: FutureBuilder<List<String>>(
+                future: provider.getSavedUsernames(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const SizedBox();
+                  }
+                  final users = snapshot.data!;
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: Icon(Icons.history),
+                        title: Text(users[index]),
+                        onTap: () async {
+                          await provider.searchUser(users[index]);
+                        },
+                      );
+                    },
+                  );
+                },
               ),
             ),
             SliverToBoxAdapter(
