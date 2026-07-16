@@ -3,6 +3,8 @@ import 'package:git_ums/providers/git_provider.dart';
 import 'package:git_ums/screens/Repo_click_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../routes/app_routes.dart';
+
 class RepoScreen extends StatelessWidget {
   const RepoScreen({super.key});
 
@@ -66,13 +68,7 @@ class RepoScreen extends StatelessWidget {
                               repo["owner"]["login"],
                               repo["name"],
                             );
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RepoClickScreen(),
-                              ),
-                            );
+                            Navigator.pushNamed(context, AppRoutes.repoDetail);
                           },
                           child: Container(
                             padding: EdgeInsets.all(16),

@@ -18,7 +18,6 @@ class DioClient {
     InterceptorsWrapper(
       onRequest: (options, handler) {
         final token = dotenv.env['GITHUB_TOKEN'];
-
         if (token != null) {
           options.headers["Authorization"] = "Bearer $token";
         }

@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import '../providers/git_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../routes/app_routes.dart';
+
 class UserDetailScreen extends StatelessWidget {
   const UserDetailScreen({super.key});
 
@@ -109,8 +111,7 @@ class UserDetailScreen extends StatelessWidget {
                                     onTap: () async {
                                       await provider.getfollowers(
                                           provider.user["login"]);
-                                      Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) => FollowersScreen(),));
+                                      Navigator.pushNamed(context, AppRoutes.followers);
                                     },
                                     child: Row(
                                       children: [
@@ -136,8 +137,7 @@ class UserDetailScreen extends StatelessWidget {
                                     onTap: () async {
                                       await provider.getfollowing(
                                           provider.user["login"]);
-                                      Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) => FollowingScreen(),));
+                                      Navigator.pushNamed(context, AppRoutes.following);
                                     },
                                     child: Row(
                                       children: [
@@ -170,8 +170,7 @@ class UserDetailScreen extends StatelessWidget {
                                 onTap: () async {
                                   await provider.getRepo(
                                       provider.user["login"]);
-                                  Navigator.push(context, MaterialPageRoute(
-                                      builder: (_) => RepoScreen()));
+                                  Navigator.pushNamed(context, AppRoutes.repo);
                                 },
                               ),
                               Divider(),
