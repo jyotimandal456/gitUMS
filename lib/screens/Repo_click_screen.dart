@@ -4,6 +4,8 @@ import 'package:git_ums/screens/issueScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
+import '../routes/app_routes.dart';
+
 class RepoClickScreen extends StatelessWidget {
   const RepoClickScreen({super.key});
 
@@ -136,11 +138,7 @@ class RepoClickScreen extends StatelessWidget {
                           repo["owner"]["login"],
                           repo["name"],
                         );
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => Issuescreen()),
-                        );
+                        Navigator.pushNamed(context, AppRoutes.issues);
                       },
                     ),
 

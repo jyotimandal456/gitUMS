@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:git_ums/providers/git_provider.dart';
 import 'package:git_ums/screens/userscreen.dart';
 import 'package:provider/provider.dart';
+
+import '../routes/app_routes.dart';
 class FollowingScreen extends StatelessWidget {
   const FollowingScreen({super.key});
 
@@ -32,8 +34,7 @@ class FollowingScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.white),),
                 onTap: () {provider.searchUser(follower['login'],
                   );
-                  Navigator.push(context, MaterialPageRoute(builder: (_)=> UserDetailScreen()));
-                  },
+                Navigator.pushNamed(context, AppRoutes.user);                  },
             );
           },
         ),

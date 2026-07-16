@@ -5,6 +5,8 @@ import 'package:git_ums/providers/git_provider.dart';
 import 'package:git_ums/screens/userscreen.dart';
 import 'package:provider/provider.dart';
 
+import '../routes/app_routes.dart';
+
 class Mainscreen extends StatefulWidget {
   const Mainscreen({super.key});
 
@@ -21,140 +23,207 @@ class _MainscreenState extends State<Mainscreen> {
 
   Future<void> loadUser() async {
     final provider = context.read<GitProvider>();
-    final username = await provider.getSavedUsernames();
 
-    if(username != null){
-      await provider.searchUser(username as String);
+    final usernames = await provider.getSavedUsernames();
+
+    if (usernames.isNotEmpty) {
+      await provider.searchUser(usernames.last);
     }
-
   }
+
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<GitProvider>(builder: (context,provider,_){
-        return CustomScrollView(
-          scrollDirection: Axis.vertical,
-          slivers: [
-            SliverAppBar(
-              leading: Icon(Icons.more_horiz),
-              title: Text(
-                'Welcome',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              expandedHeight: 100,
-              pinned: true,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  color: Colors.yellow.shade100,
-                ),
-              ),
-            ),
-
-            SliverToBoxAdapter(
-              child: Padding(
-                padding:  EdgeInsets.all(10),
-                child: TextFormField(
-                  controller: provider.controller,
-                  decoration: InputDecoration(
-                    hintText: 'Search by name',
-                    suffixIcon: IconButton(
-                      onPressed: () async {
-                        String username = provider.controller.text.trim();
-                       await provider.searchUser(username);
-                       // await provider.getRepo(username);
-
-                      },
-                      icon: Icon(Icons.search_rounded),
+      backgroundColor: Colors.grey.shade100,
+      body: Consumer<GitProvider>(
+        builder: (context, provider, _) {
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 180,
+                pinned: true,
+                centerTitle: true,
+                backgroundColor: Colors.indigo,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(
+                    "GitHub Explorer",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.indigo, Colors.blue],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                    filled: true,
-                    fillColor: Colors.blueGrey.shade100,
-                    border: OutlineInputBorder(
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Material(
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(18),
+                    child: TextFormField(
+                      controller: provider.controller,
+                      decoration: InputDecoration(
+                        hintText: "Search GitHub username",
+                        prefixIcon: Icon(Icons.search),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.arrow_forward),
+                          onPressed: () async {
+                            String username = provider.controller.text.trim();
+
+                            if (username.isNotEmpty) {
+                              await provider.searchUser(username);
+                            }
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (provider.user.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.user);
+                      },
+                      child: Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(18),
+                          child: Row(
+                            children: [
+                              Hero(
+                                tag: provider.user["login"],
+                                child: CircleAvatar(
+                                  radius: 35,
+                                  backgroundImage: NetworkImage(
+                                    provider.user["avatar_url"],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      provider.user["login"],
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+
+                                    SizedBox(height: 5),
+
+                                    Text(
+                                      provider.user["name"] ?? "No Name",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+
+                                    SizedBox(height: 10),
+
+                                    Text(
+                                      "Tap to view profile",
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Icon(Icons.arrow_forward_ios)
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 20, top: 20, bottom: 10),
+                  child: Text(
+                    "Recent Searches",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                  ),
+                ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: FutureBuilder<List<String>>(
-                future: provider.getSavedUsernames(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const SizedBox();
-                  }
-                  final users = snapshot.data!;
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: users.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: Icon(Icons.history),
-                        title: Text(users[index]),
-                        onTap: () async {
-                          await provider.searchUser(users[index]);
-                        },
+              SliverToBoxAdapter(
+                child: FutureBuilder<List<String>>(
+                  future: provider.getSavedUsernames(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(30),
+                          child: Text(
+                            "No recent searches",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
                       );
-                    },
-                  );
-                },
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: provider.user.isEmpty
-                  ?  SizedBox()
-                  : InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserDetailScreen()));
-                },
-                child: Card(
-                  margin:  EdgeInsets.all(16),
-                  child: ListTile(
-                    leading: CircleAvatar(backgroundImage:
-                      NetworkImage(provider.user["avatar_url"]),
-                    ),
-                    title: Text(provider.user["login"]),
-                    subtitle: Text(provider.user["name"] ?? "No Name"),
-                  ),
+                    }
+
+                    final users = snapshot.data!;
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: users.length,
+                      separatorBuilder: (_, __) => SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.indigo.shade100,
+                                child: Icon(
+                                  Icons.history,
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              title: Text(users[index]),
+                              trailing: Icon(Icons.arrow_forward_ios),
+                              onTap: () async {
+                                await provider.searchUser(users[index]);
+
+                                Navigator.pushNamed(context, AppRoutes.user);
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
-            ),
-            // SliverToBoxAdapter(
-            //   child: Container(
-            //     height: 300,
-            //     width: 300,
-            //     child: ListView.builder(
-            //       scrollDirection: Axis.horizontal,
-            //       itemCount: 10,
-            //       itemBuilder: (context, index) {
-            //         return Container(
-            //           width: 300,
-            //           margin:  EdgeInsets.all(8),
-            //           decoration: BoxDecoration(
-            //             color: Colors.blueGrey.shade100,
-            //             borderRadius: BorderRadius.circular(12),
-            //           ),
-            //           child: Center(
-            //             child: Text(
-            //               "Item ${index + 1}",
-            //               style:  TextStyle(color: Colors.white),
-            //             ),
-            //           ),
-            //         );
-            //       },
-            //     ),
-            //   ),
-            // ),
-          ],
-
-        );
-      },
-
+            ],
+          );
+        },
       ),
     );
   }
