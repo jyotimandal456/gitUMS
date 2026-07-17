@@ -48,12 +48,15 @@ class _MainscreenState extends State<Mainscreen> {
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
                     "GitHub Explorer",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.blue,
+                        fontWeight: FontWeight.bold),
                   ),
                   background: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.indigo, Colors.blue],
+                        colors: [
+                          Colors.blue, Colors.black],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -182,9 +185,7 @@ class _MainscreenState extends State<Mainscreen> {
                         ),
                       );
                     }
-
                     final users = snapshot.data!;
-
                     return ListView.separated(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
@@ -192,7 +193,7 @@ class _MainscreenState extends State<Mainscreen> {
                       separatorBuilder: (_, __) => SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          padding: EdgeInsets.symmetric(horizontal: 30),
                           child: Card(
                             elevation: 3,
                             shape: RoundedRectangleBorder(
@@ -207,7 +208,7 @@ class _MainscreenState extends State<Mainscreen> {
                                 ),
                               ),
                               title: Text(users[index]),
-                              trailing: Icon(Icons.arrow_forward_ios),
+                             // trailing: Icon(Icons.arrow_forward_ios),
                               onTap: () async {
                                 await provider.searchUser(users[index]);
 
