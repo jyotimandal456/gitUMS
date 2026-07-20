@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:git_ums/config/dio_client.dart';
@@ -84,9 +83,7 @@ class GitProvider extends ChangeNotifier {
 
       print("GET ALL REPO RESPONSE:");
       print(response.data);
-
       _allRepos = response.data;
-
       print("ALL REPOS COUNT: ${_allRepos.length}");
 
       notifyListeners();
@@ -238,11 +235,8 @@ class GitProvider extends ChangeNotifier {
       _username = username;
       final prefs = await SharedPreferences.getInstance();
       await saveUsername(username);
-
       Response response = await dio.get("users/$username");
-
       _user = response.data;
-
       _currentPage = 1;
 
       await getAllRepo(username);
@@ -269,6 +263,18 @@ class GitProvider extends ChangeNotifier {
     return prefs.getStringList("searched_users") ?? [];
   }
 
+  Future<void> deleteUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    List<String> users = prefs.getStringList("usernames") ?? [];
+
+    users.remove(username);
+
+    await prefs.setStringList("usernames", users);
+
+    notifyListeners();
+  }
+
   Future<void> getRepo(String username) async {
     try {
       _isLoading = true;
@@ -288,7 +294,6 @@ class GitProvider extends ChangeNotifier {
         print("First Repo: ${_repos.first["name"]}");
       }
       _isLoading = false;
-
       notifyListeners();
     } on DioException catch (e) {
       _isLoading = false;

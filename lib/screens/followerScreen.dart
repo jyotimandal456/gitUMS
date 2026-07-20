@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../providers/git_provider.dart';
 import '../routes/app_routes.dart';
 
@@ -35,48 +34,20 @@ class FollowersScreen extends StatelessWidget {
           ),
           body: Stack(
             children: [
-              /// Background
+
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xff2193b0),
-                      Color(0xff6dd5ed),
+                      Colors.blue,
+                      Colors.black,
                       Color(0xffccf2ff),
                     ],
                   ),
                 ),
               ),
-
-              /// Decorative circles
-              Positioned(
-                top: -80,
-                left: -60,
-                child: Container(
-                  width: 220,
-                  height: 220,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(.18),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-
-              Positioned(
-                bottom: -100,
-                right: -70,
-                child: Container(
-                  width: 260,
-                  height: 260,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(.15),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-
               SafeArea(
                 child: ListView.builder(
                   padding: EdgeInsets.only(
@@ -88,7 +59,6 @@ class FollowersScreen extends StatelessWidget {
                   itemCount: provider.followers.length,
                   itemBuilder: (context, index) {
                     final follower = provider.followers[index];
-
                     return followerCard(context, follower, provider);
                   },
                 ),
@@ -99,7 +69,6 @@ class FollowersScreen extends StatelessWidget {
       },
     );
   }
-
   Widget followerCard(
     BuildContext context,
     Map follower,
@@ -152,9 +121,7 @@ class FollowersScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 18),
-
                   Text(
                     follower["login"],
                     style: TextStyle(
@@ -163,9 +130,7 @@ class FollowersScreen extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-
                   SizedBox(height: 6),
-
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
@@ -177,9 +142,7 @@ class FollowersScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.white70),
                     ),
                   ),
-
                   SizedBox(height: 22),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(

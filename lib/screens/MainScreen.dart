@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:git_ums/providers/git_provider.dart';
 import 'package:git_ums/screens/userscreen.dart';
 import 'package:provider/provider.dart';
-
+import 'package:flutter_slidable/flutter_slidable.dart';
 import '../routes/app_routes.dart';
 
 class Mainscreen extends StatefulWidget {
@@ -105,59 +105,7 @@ class _MainscreenState extends State<Mainscreen> {
                       onTap: () {
                         Navigator.pushNamed(context, AppRoutes.user);
                       },
-                      child: Card(
-                        elevation: 8,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(18),
-                          child: Row(
-                            children: [
-                              Hero(
-                                tag: provider.user["login"],
-                                child: CircleAvatar(
-                                  radius: 35,
-                                  backgroundImage: NetworkImage(
-                                    provider.user["avatar_url"],
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      provider.user["login"],
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-
-                                    SizedBox(height: 5),
-
-                                    Text(
-                                      provider.user["name"] ?? "No Name",
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-
-                                    SizedBox(height: 10),
-
-                                    Text(
-                                      "Tap to view profile",
-                                      style: TextStyle(color: Colors.blue),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Icon(Icons.arrow_forward_ios)
-                            ],
-                          ),
-                        ),
-                      ),
+                      child: Text(''),
                     ),
                   ),
                 ),
@@ -192,28 +140,55 @@ class _MainscreenState extends State<Mainscreen> {
                       itemCount: users.length,
                       separatorBuilder: (_, __) => SizedBox(height: 8),
                       itemBuilder: (context, index) {
-                        return Padding(
+                        return  Padding(
                           padding: EdgeInsets.symmetric(horizontal: 30),
-                          child: Card(
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.indigo.shade100,
-                                child: Icon(
-                                  Icons.history,
-                                  color: Colors.indigo,
-                                ),
-                              ),
-                              title: Text(users[index]),
-                             // trailing: Icon(Icons.arrow_forward_ios),
-                              onTap: () async {
-                                await provider.searchUser(users[index]);
+                          child: Slidable(
+                            key: ValueKey(users[index]),
 
-                                Navigator.pushNamed(context, AppRoutes.user);
-                              },
+                            endActionPane: ActionPane(
+                              motion: DrawerMotion(),
+                              extentRatio: 0.25,
+                              children: [
+                                SlidableAction(
+                                  onPressed: (context) async {
+                                    await provider.deleteUsername(users[index]);
+
+                                  },
+                                  icon: Icons.delete,
+                                  label: "Delete",
+                                  foregroundColor: Colors.red,
+                                ),
+                              ],
+                            ),
+
+                            child: Card(
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.indigo.shade100,
+                                  child: Icon(
+                                    Icons.history,
+                                    color: Colors.indigo,
+                                  ),
+                                ),
+
+                                title: Text(users[index]),
+
+                                trailing: Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 18,
+                                ),
+
+                                onTap: () async {
+                                  await provider.searchUser(users[index]);
+
+                                  Navigator.pushNamed(context, AppRoutes.user,
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         );
