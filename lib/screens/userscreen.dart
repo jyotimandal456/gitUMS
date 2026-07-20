@@ -78,12 +78,10 @@ class UserDetailScreen extends StatelessWidget {
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color:  Color(0xFF38BDF8), width: 3),
+                                border: Border.all(color:  Color(0xFF38BDF8), width: 0.5),
                                 boxShadow: [
                                   BoxShadow(
                                     color:Color(0xFF38BDF8).withOpacity(0.2),
-                                    blurRadius: 15,
-                                    spreadRadius: 2,
                                   )
                                 ],
                               ),
@@ -326,9 +324,9 @@ class UserDetailScreen extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Color(0xFF1E293B),
+          color:  Colors.blue.withOpacity(0.15),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.blue.withOpacity(0.32)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
