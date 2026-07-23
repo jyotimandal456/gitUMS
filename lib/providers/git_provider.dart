@@ -7,10 +7,15 @@ import 'package:git_ums/config/dio_client.dart';
 class GitProvider extends ChangeNotifier {
   final TextEditingController controller = TextEditingController();
   final Dio dio = DioClient.dio;
+
   Map<String, dynamic> _user = {};
   Map<String, dynamic> get user => _user;
+
   String _username = "";
   List<dynamic> _allRepos = [];
+
+  List<String>_savedUsers=[];
+  List<String> get savedUsers =>_savedUsers;
 
   List<dynamic> get allRepos => _allRepos;
 
@@ -250,29 +255,41 @@ class GitProvider extends ChangeNotifier {
 
   Future<void> saveUsername(String username) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> usernames = prefs.getStringList("searched_users") ?? [];
 
-    if (!usernames.contains(username)) {
-      usernames.add(username);
-    }
-    await prefs.setStringList("searched_users", usernames);
+    _savedUsers = prefs.getStringList("searched_users") ?? [];
+
+    _savedUsers.remove(username);
+    _savedUsers.insert(0, username);
+
+    await prefs.setStringList("searched_users", _savedUsers);
+
+    notifyListeners();
   }
 
-  Future<List<String>> getSavedUsernames() async {
+  Future<void> getSavedUsernames() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList("searched_users") ?? [];
+
+    _savedUsers = prefs.getStringList("searched_users") ?? [];
+
+    notifyListeners();
   }
 
   Future<void> deleteUsername(String username) async {
     final prefs = await SharedPreferences.getInstance();
 
-    List<String> users = prefs.getStringList("usernames") ?? [];
+    _savedUsers = prefs.getStringList("searched_users") ?? [];
 
-    users.remove(username);
+    _savedUsers.remove(username);
 
-    await prefs.setStringList("usernames", users);
+    await prefs.setStringList("searched_users", _savedUsers);
 
     notifyListeners();
+  }
+  Future<void> clearhistory()async{
+  final prefs =await SharedPreferences.getInstance();
+  await prefs.remove("searched_users");
+  _savedUsers.clear();
+  notifyListeners();
   }
 
   Future<void> getRepo(String username) async {

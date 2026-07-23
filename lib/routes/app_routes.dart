@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:git_ums/screens/MainScreen.dart';
 import 'package:git_ums/screens/Repo_click_screen.dart';
+import 'package:git_ums/screens/SignupScreen.dart';
 import 'package:git_ums/screens/followerScreen.dart';
 import 'package:git_ums/screens/following_screen.dart';
 import 'package:git_ums/screens/issueScreen.dart';
@@ -18,9 +19,10 @@ class AppRoutes {
   static const followers = "/followers";
   static const following = "/following";
   static const issues = "/issues";
+  static const signup="/signup";
 
   static Map<String, WidgetBuilder> routes = {
-    home: (context) => LoginScreen(),
+    home: (context) =>LoginScreen() ,
     login: (context) => LoginScreen(),
     main: (context) => Mainscreen(),
     user: (context) => UserDetailScreen(),
@@ -29,5 +31,6 @@ class AppRoutes {
     followers: (context) => FollowersScreen(),
     following: (context) => FollowingScreen(),
     issues: (context) => Issuescreen(),
+    signup:(context)=>Signupscreen(),
   };
 }
